@@ -17,8 +17,12 @@
 //     the worst case, but this is not a secure way to hold a real secret —
 //     don't reuse this key anywhere sensitive.
 //   - Still satisfies a "must use Gemma" hackathon rule: OpenRouter is
-//     serving google/gemma-3-4b-it, a real Gemma 3 model, just hosted
-//     rather than run locally.
+//     serving a real Gemma model (currently Gemma 4, google/gemma-4-26b-a4b-it),
+//     just hosted rather than run locally. NOTE: OpenRouter's free-tier
+//     model lineup rotates — Gemma 3's free tier was discontinued mid-July
+//     2026. If this model ever 404s again with an "unavailable for free"
+//     message, check https://openrouter.ai/models?fmt=cards&max_price=0
+//     for the current free Gemma variant and update MODEL_ID below.
 // ---------------------------------------------------------------------------
 
 export const TOPICS = [
@@ -35,7 +39,12 @@ export const TOPICS = [
 const MOOD_SCALE = '1 (very low) to 5 (very good)';
 
 const OPENROUTER_URL = 'https://openrouter.ai/api/v1/chat/completions';
-const MODEL_ID = 'google/gemma-3-4b-it:free';
+// google/gemma-3-4b-it:free was discontinued (OpenRouter returned 404,
+// "unavailable for free" as of July 2026). Switched to Gemma 4, which has
+// confirmed-live free variants as of this week. Using the smaller MoE
+// variant (26B, ~4B active params) — a better fit for a quick
+// classification task than the larger 31B dense model.
+const MODEL_ID = 'google/gemma-4-26b-a4b-it:free';
 const API_KEY = import.meta.env.VITE_OPENROUTER_API_KEY;
 
 function buildExtractionPrompt(entryText) {

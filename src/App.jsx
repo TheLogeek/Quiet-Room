@@ -76,7 +76,7 @@ export default function App() {
           therapist, or counselor.
         </p>
         <p className="ai-note">
-          Each entry is read by Gemma 3, which picks up on mood, topics, and
+          Each entry is read by Gemma, which picks up on mood, topics, and
           themes automatically.
         </p>
       </header>
