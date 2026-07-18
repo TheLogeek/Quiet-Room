@@ -113,7 +113,18 @@ async function callGemma(prompt) {
       contents: [{ parts: [{ text: prompt }] }],
       generationConfig: {
         temperature: 0.2,
-        maxOutputTokens: 256,
+        // Raised from 256: Gemma 4 has an internal "thinking" mode that
+        // can consume the token budget on hidden reasoning before ever
+        // producing real output, causing "no JSON object found" failures
+        // with no HTTP error. thinkingLevel below should stop this, but
+        // keep headroom in case thinking isn't fully suppressed.
+        maxOutputTokens: 512,
+        // includeThoughts: false is silently ignored on Gemma 4 (confirmed
+        // bug: google-gemini/cookbook#1198). thinkingLevel: "MINIMAL" is
+        // the setting that actually produces zero thought tokens.
+        thinkingConfig: {
+          thinkingLevel: 'MINIMAL',
+        },
       },
     }),
   });
@@ -124,8 +135,17 @@ async function callGemma(prompt) {
   }
 
   const data = await response.json();
-  const text = data?.candidates?.[0]?.content?.parts?.[0]?.text;
-  if (typeof text !== 'string') {
+  // Defensive: even with thinkingLevel MINIMAL, Google's docs note larger
+  // models may still occasionally emit a thought part. Skip any part
+  // marked "thought": true and only use real answer text.
+  const parts = data?.candidates?.[0]?.content?.parts;
+  const text = Array.isArray(parts)
+    ? parts
+        .filter((p) => !p.thought)
+        .map((p) => p.text || '')
+        .join('')
+    : undefined;
+  if (!text) {
     throw new Error('Unexpected Google AI Studio response shape');
   }
   return text;
