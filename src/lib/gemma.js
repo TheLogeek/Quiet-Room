@@ -5,24 +5,31 @@
 // (WebGPU, local .task model file). That is no longer what this file does.
 //
 // Due to WebGPU/device-compatibility issues encountered close to a hackathon
-// deadline, this was switched to call Gemma 3 via OpenRouter's hosted API
-// instead. This means:
-//   - Journal entry text now leaves the device and is sent to OpenRouter's
+// deadline, this was switched to a hosted API call instead. First tried
+// OpenRouter's free tier, but hit two dead ends there: the free Gemma 3
+// slug was discontinued mid-July 2026, and its replacement (free Gemma 4)
+// draws from a shared rate-limit pool across ALL OpenRouter users hitting
+// that model — got 429'd after a single successful call, unrelated to our
+// own usage.
+//
+// Now calling Google AI Studio's Gemini API directly instead, which serves
+// Gemma models on the same generateContent endpoint with a free tier tied
+// to YOUR OWN account/project, not a shared pool. See:
+// https://ai.google.dev/gemma/docs/core/gemma_on_gemini_api
+//
+// This means:
+//   - Journal entry text now leaves the device and is sent to Google's
 //     servers for processing. The "entries never leave this device" claim
 //     in the UI/README no longer holds and should be updated/removed.
-//   - Requires OPENROUTER_API_KEY (as VITE_OPENROUTER_API_KEY) at build
-//     time. Because this is a client-only app with no backend, the key
-//     ships inside the browser bundle and is visible to anyone who opens
-//     devtools. Free-tier OpenRouter keys have low rate limits, bounding
-//     the worst case, but this is not a secure way to hold a real secret —
-//     don't reuse this key anywhere sensitive.
-//   - Still satisfies a "must use Gemma" hackathon rule: OpenRouter is
-//     serving a real Gemma model (currently Gemma 4, google/gemma-4-26b-a4b-it),
-//     just hosted rather than run locally. NOTE: OpenRouter's free-tier
-//     model lineup rotates — Gemma 3's free tier was discontinued mid-July
-//     2026. If this model ever 404s again with an "unavailable for free"
-//     message, check https://openrouter.ai/models?fmt=cards&max_price=0
-//     for the current free Gemma variant and update MODEL_ID below.
+//   - Requires a Google AI Studio API key (as VITE_GOOGLE_API_KEY) at
+//     build time. Because this is a client-only app with no backend, the
+//     key ships inside the browser bundle and is visible to anyone who
+//     opens devtools. Don't reuse this key anywhere sensitive — Google's
+//     docs explicitly recommend a backend proxy for production, which
+//     this app does not have. Free-tier rate limits bound the worst case.
+//   - Still satisfies a "must use Gemma" hackathon rule: this calls Gemma
+//     4 (gemma-4-26b-a4b-it), a real Gemma model, hosted by Google itself
+//     rather than run locally.
 // ---------------------------------------------------------------------------
 
 export const TOPICS = [
@@ -38,14 +45,9 @@ export const TOPICS = [
 
 const MOOD_SCALE = '1 (very low) to 5 (very good)';
 
-const OPENROUTER_URL = 'https://openrouter.ai/api/v1/chat/completions';
-// google/gemma-3-4b-it:free was discontinued (OpenRouter returned 404,
-// "unavailable for free" as of July 2026). Switched to Gemma 4, which has
-// confirmed-live free variants as of this week. Using the smaller MoE
-// variant (26B, ~4B active params) — a better fit for a quick
-// classification task than the larger 31B dense model.
-const MODEL_ID = 'google/gemma-4-26b-a4b-it:free';
-const API_KEY = import.meta.env.VITE_OPENROUTER_API_KEY;
+const MODEL_ID = 'gemma-4-26b-a4b-it';
+const GOOGLE_API_URL = `https://generativelanguage.googleapis.com/v1beta/models/${MODEL_ID}:generateContent`;
+const API_KEY = import.meta.env.VITE_GOOGLE_API_KEY;
 
 function buildExtractionPrompt(entryText) {
   return `You are a text classifier for a private journaling app. Read the journal entry and output ONLY a single JSON object, no other text, no markdown fences.
@@ -97,33 +99,34 @@ function sanitize(parsed) {
 async function callGemma(prompt) {
   if (!API_KEY) {
     throw new Error(
-      'Missing VITE_OPENROUTER_API_KEY. Set this in your deploy environment variables.'
+      'Missing VITE_GOOGLE_API_KEY. Set this in your deploy environment variables.'
     );
   }
 
-  const response = await fetch(OPENROUTER_URL, {
+  const response = await fetch(GOOGLE_API_URL, {
     method: 'POST',
     headers: {
-      Authorization: `Bearer ${API_KEY}`,
+      'x-goog-api-key': API_KEY,
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({
-      model: MODEL_ID,
-      messages: [{ role: 'user', content: prompt }],
-      temperature: 0.2,
-      max_tokens: 256,
+      contents: [{ parts: [{ text: prompt }] }],
+      generationConfig: {
+        temperature: 0.2,
+        maxOutputTokens: 256,
+      },
     }),
   });
 
   if (!response.ok) {
     const errText = await response.text().catch(() => '');
-    throw new Error(`OpenRouter request failed: ${response.status} ${errText}`);
+    throw new Error(`Google AI Studio request failed: ${response.status} ${errText}`);
   }
 
   const data = await response.json();
-  const text = data?.choices?.[0]?.message?.content;
+  const text = data?.candidates?.[0]?.content?.parts?.[0]?.text;
   if (typeof text !== 'string') {
-    throw new Error('Unexpected OpenRouter response shape');
+    throw new Error('Unexpected Google AI Studio response shape');
   }
   return text;
 }
