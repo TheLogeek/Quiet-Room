@@ -75,6 +75,10 @@ export default function App() {
           MindMirror is a mirror, not a diagnosis. It doesn't replace a doctor,
           therapist, or counselor.
         </p>
+        <p className="ai-note">
+          Each entry is read by Gemma 3, which picks up on mood, topics, and
+          themes automatically.
+        </p>
       </header>
 
       <form onSubmit={handleSubmit} className="checkin-form">
@@ -87,9 +91,6 @@ export default function App() {
         <button type="submit" disabled={status === 'extracting' || !text.trim()}>
           {status === 'extracting' ? 'Reading...' : 'Save check-in'}
         </button>
-        {status === 'loading-model' && (
-          <p className="hint">Loading the on-device model (first time only)...</p>
-        )}
       </form>
 
       {trend && (
@@ -135,6 +136,11 @@ export default function App() {
                 {e.topics?.length > 0 && <span>{e.topics.join(', ')}</span>}
               </div>
               <p>{e.text}</p>
+              {e.reflection && (
+                <p className="gemma-reflection">
+                  <span className="gemma-tag">Gemma noticed:</span> {e.reflection}
+                </p>
+              )}
             </li>
           ))}
         </ul>

@@ -80,6 +80,22 @@ section h2 { font-size: 0.95rem; color: var(--muted); text-transform: uppercase;
   font-style: italic;
 }
 
+.ai-note {
+  color: var(--muted);
+  font-size: 0.75rem;
+  margin-top: 4px;
+}
+
+.gemma-reflection {
+  font-size: 0.85rem;
+  color: var(--muted);
+  margin-top: 4px;
+}
+.gemma-tag {
+  font-weight: 600;
+  color: #7c9885;
+}
+
 .data-controls {
   display: flex;
   flex-wrap: wrap;
