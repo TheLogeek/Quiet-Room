@@ -1,5 +1,6 @@
 # MindMirror
-**MindMirror** is a high-privacy, intelligent mental health check-in journal built for the GDG Lagos Hackathon. It pairs local-first client storage with Google's **Gemma 4** model to deliver low-friction emotional tracking, instant neutral reflections, and streak-based pattern detection without building permanent database profiles on user activity.
+[Live Demo](mindmirror-app.vercel.app)
+**MindMirror** is a high-privacy, intelligent mental health check-in journal built for the GDG Lagos Hackathon. Accessible live at [mindmirror-app.vercel.app](mindmirror-app.vercel.app), it pairs local-first client storage with Google's **Gemma 4** model to deliver low-friction emotional tracking, instant neutral reflections, and streak-based pattern detection without building permanent database profiles on user activity.
 ## Key Features
  * **Gemma-Powered Emotional Extraction:** Automatically parses journal entries to extract mood scores, identify topic tags, and provide an instant, neutral reflection (*"Gemma noticed..."*) directly within the entry.
  * **Local-First History Storage:** Journal entries, mood histories, and structural pattern data remain strictly stored inside the user's browser via IndexedDB.
@@ -58,12 +59,13 @@ MindMirror defaults to localized crisis intervention tools for Nigeria:
  * **Client-Only Architecture:** This build operates without an explicit backend middleware layer. For enterprise production deployments, API key handling should be proxied through a server-side route (e.g., Vercel Edge Functions or AWS Lambda) to keep client keys unexposed.
 ## Tech Stack
  * **Frontend:** React, Vite, Tailwind CSS
+ * **Deployment:** Vercel (mindmirror-app.vercel.app)
  * **Model Engine:** Gemma 4 (gemma-4-26b-a4b-it) via Google AI Studio API
  * **Local Storage:** IndexedDB
  * **Icons & UI:** Lucide React
 ## Team
 Built for the **GDG Lagos Hackathon** by:
- * **Zakarriya Temitope**
  * **Solomon Adenuga**
+ * **Zakarriya Temitope**
 ## License
 Distributed under the MIT License. See LICENSE for more information.
