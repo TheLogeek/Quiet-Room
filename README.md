@@ -66,7 +66,7 @@ MindMirror defaults to localized crisis intervention tools for Nigeria:
  * **Icons & UI:** Lucide React
 ## Team
 Built for the **GDG Lagos Hackathon** by:
- * **Solomon Adenuga**
  * **Zakarriya Temitope**
+ * **Solomon Adenuga**
 ## License
 Distributed under the MIT License. See LICENSE for more information.
