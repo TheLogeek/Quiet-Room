@@ -1,5 +1,6 @@
 # MindMirror
 [Live Demo](mindmirror-app.vercel.app)
+
 **MindMirror** is a high-privacy, intelligent mental health check-in journal built for the GDG Lagos Hackathon. Accessible live at [mindmirror-app.vercel.app](mindmirror-app.vercel.app), it pairs local-first client storage with Google's **Gemma 4** model to deliver low-friction emotional tracking, instant neutral reflections, and streak-based pattern detection without building permanent database profiles on user activity.
 ## Key Features
  * **Gemma-Powered Emotional Extraction:** Automatically parses journal entries to extract mood scores, identify topic tags, and provide an instant, neutral reflection (*"Gemma noticed..."*) directly within the entry.
